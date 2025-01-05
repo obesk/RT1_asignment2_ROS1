@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find assignment_2_2024)/launch/sim_w1.launch" />
+    <node pkg="ass2_ros1" type="action_client.py" name="ass2_ros1" output="screen" />
+</launch>
