@@ -1,11 +1,15 @@
 #! /usr/bin/env python
 
+from assignment_2_2024.msg import PlanningAction, PlanningGoal
+
 import rospy
 import actionlib
 
 import time
 
-from assignment_2_2024.msg import PlanningAction, PlanningGoal 
+from nav_msgs.msg import Odometry
+
+from ass2_ros1.msg import RobotVelocity
 
 client = None
 goal = None
@@ -13,21 +17,27 @@ latest_feedback = None
 
 new_goal = False
 target_reached = False
+
+vel_pub = None
  
 def main():
-    global client
+    global client, vel_pub
+    vel_pub = rospy.Publisher("/robot_status", RobotVelocity, queue_size = 10)
+    rospy.Subscriber("/odom", Odometry, publish_robot_velocity)
 
     rospy.init_node('planning_client')
     client = actionlib.SimpleActionClient('/reaching_goal', PlanningAction)
+    rospy.loginfo("waiting for server....")
     client.wait_for_server()
 
     choices = {"New/Update goal": update_goal, "Get status": print_status, "Quit": exit}
     choice_list = list(choices.keys())
 
+    rate = rospy.Rate(10)
     while True:
         choice = get_choiche("Select what you want to do: ", choice_list)
         choices[choice_list[choice]]()
-        time.sleep(1)
+        rate.sleep()
 
 def read_feedback(feedback):
     global target_reached, new_goal, latest_feedback
@@ -37,6 +47,15 @@ def read_feedback(feedback):
         rospy.print("Target reached !")
         target_reached = True
         new_goal = False;
+
+def publish_robot_velocity(msg):
+    vel = RobotVelocity()
+    vel.x = msg.pose.pose.position.x
+    vel.y = msg.pose.pose.position.y
+    vel.vel_x = msg.twist.twist.linear.x
+    vel.vel_z = msg.twist.twist.angular.z
+
+    vel_pub.publish(vel)
 
 def update_goal():
     global goal
@@ -70,6 +89,7 @@ def get_choiche(prompt, choice_list):
     
     return user_input
 
+#TODO: better status print
 def print_status():
     if (not goal):
         print("No goal set yet")
