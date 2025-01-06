@@ -21,14 +21,15 @@ target_reached = False
 vel_pub = None
  
 def main():
+    rospy.sleep(2)
     global client, vel_pub
+
+    rospy.init_node('action_client')
+
     vel_pub = rospy.Publisher("/robot_status", RobotVelocity, queue_size = 10)
     rospy.Subscriber("/odom", Odometry, publish_robot_velocity)
 
-    rospy.init_node('planning_client')
     client = actionlib.SimpleActionClient('/reaching_goal', PlanningAction)
-    rospy.loginfo("waiting for server....")
-    client.wait_for_server()
 
     choices = {"New/Update goal": update_goal, "Get status": print_status, "Quit": exit}
     choice_list = list(choices.keys())
