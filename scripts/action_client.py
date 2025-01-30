@@ -10,10 +10,16 @@ import time
 from nav_msgs.msg import Odometry
 
 from ass2_ros1.msg import RobotVelocity
+from ass2_ros1.srv import RunInfo, RunInfoResponse
+
+MS_TO_KMH = 3.6
 
 client = None
 goal = None
 latest_feedback = None
+
+goals_reached = 0;
+goals_canceled = 0;
 
 new_goal = False
 target_reached = False
@@ -24,9 +30,12 @@ def main():
     rospy.sleep(2)
     global client, vel_pub
 
+    service = rospy.Service("/run_info", RunInfo, run_info)
+
     rospy.init_node('action_client')
 
     vel_pub = rospy.Publisher("/robot_status", RobotVelocity, queue_size = 10)
+    vel_pub = rospy.Publisher("/robot_actual_velocity", RobotVelocity, queue_size = 10)
     rospy.Subscriber("/odom", Odometry, publish_robot_velocity)
 
     client = actionlib.SimpleActionClient('/reaching_goal', PlanningAction)
@@ -40,14 +49,18 @@ def main():
         choices[choice_list[choice]]()
         rate.sleep()
 
+def run_info(req):
+    return RunInfoResponse(goals_reached, goals_canceled)
+
 def read_feedback(feedback):
-    global target_reached, new_goal, latest_feedback
+    global target_reached, new_goal, latest_feedback, goals_reached
     latest_feedback = feedback;
 
     if (new_goal and feedback.stat == 'Target reached!'):
         rospy.print("Target reached !")
         target_reached = True
-        new_goal = False;
+        new_goal = False
+        goals_reached = goals_reached + 1
 
 def publish_robot_velocity(msg):
     vel = RobotVelocity()
@@ -55,17 +68,29 @@ def publish_robot_velocity(msg):
     vel.y = msg.pose.pose.position.y
     vel.vel_x = msg.twist.twist.linear.x
     vel.vel_z = msg.twist.twist.angular.z
-
     vel_pub.publish(vel)
 
+    actual_velocity = RobotVelocity()
+    actual_velocity.x = msg.twist.twist.linear.x * MS_TO_KMH;
+    actual_velocity.y = msg.twist.twist.linear.y * MS_TO_KMH;
+    vel_pub.publish(actual_velocity)
+
+
 def update_goal():
-    global goal
+    global goal, new_goal, goals_canceled
+
+    if (goal): # if there was a goal before we consider the first goal canceled
+        goals_canceled = goals_canceled + 1
+
+    new_goal = True
     goal = PlanningGoal()
     goal.target_pose.header.frame_id = "map"
     #TODO: inputcheck 
     goal.target_pose.pose.position.x = float(input("insert the x for the goal: "))
     goal.target_pose.pose.position.y = float(input("insert the y for the goal: "))
     client.send_goal(goal, feedback_cb=read_feedback)
+
+    
 
 def get_choiche(prompt, choice_list):
     user_input = 0
