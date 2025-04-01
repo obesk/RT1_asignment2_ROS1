@@ -1,5 +1,6 @@
 # Assignment 2 Research Track 1 - ROS 1
 
+
 This assignment interacts with the gazebo simulation environment provided by the package https://github.com/CarmineD8/assignment_2_2024 and interacts with the robot in it.
 
 The purpose of the assignment is to show the interaction between nodes in ROS1 
@@ -27,3 +28,7 @@ After running the simulation and the program you will be prompted with the menu,
 In this assignment you can see the use of custom Goal in the `goal_service.py` script.
 
 In the `action_client.py` script you can see the use of actions and custom messages.
+
+## Documenation
+
+You can find the documentation at this address: https://obesk.github.io/RT1_asignment2_ROS1/
