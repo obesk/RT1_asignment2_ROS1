@@ -1,5 +1,16 @@
 #! /usr/bin/env python
 
+"""
+This is a service that allows to get current goal position
+
+.. module:: goal_service
+   :platform: Unix
+   :synopsis: Goal position server
+
+.. moduleauthor:: Roberto Bertelli <s7289118@studenti.unige.it>
+"""
+
+
 import rospy 
 import sys
 
@@ -14,6 +25,16 @@ def main():
         rate.sleep()
 
 def send_last_goal(req):
+    """
+    Retrieves and returns the last target coordinates
+
+    :param req: the request from the user
+    :type feedback: Goadl
+
+    :returns: Coordinatesof hte last target
+    :rtype: GoalResponse 
+    """
+
     pos_x = float(rospy.get_param("/des_pos_x"))
     pos_y = float(rospy.get_param("/des_pos_y"))
     return GoalResponse(pos_x, pos_y)

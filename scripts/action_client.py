@@ -1,5 +1,22 @@
 #! /usr/bin/env python
 
+"""
+This is an action client node to allows the user to interact with the goals. 
+Specifically the user can:
+
+- Update the goal
+- Get status of the current goal retrieving mission
+
+This node also publishes a custom message with the current robot velocity and position
+
+
+.. module:: action_client
+   :platform: Unix
+   :synopsis: Action client, robot velocity and position publisher 
+
+.. moduleauthor:: Roberto Bertelli <s7289118@studenti.unige.it>
+"""
+
 from assignment_2_2024.msg import PlanningAction, PlanningGoal
 
 import rospy
@@ -21,6 +38,9 @@ target_reached = False
 vel_pub = None
  
 def main():
+    """
+    Main function
+    """
     rospy.sleep(2)
     global client, vel_pub
 
@@ -41,6 +61,13 @@ def main():
         rate.sleep()
 
 def read_feedback(feedback):
+    """
+    Manages the feedback provided by the action server relative to the current goal
+
+    :param feeback: the feedback provided by the action server
+    :type feedback: PlanningFeedback
+    """
+
     global target_reached, new_goal, latest_feedback
     latest_feedback = feedback;
 
@@ -50,6 +77,13 @@ def read_feedback(feedback):
         new_goal = False;
 
 def publish_robot_velocity(msg):
+    """
+    Publishes the robot velocity custom message starting from the odometry message received
+
+    :param msg: the message from the Odom
+    :type msg: Odometry
+    """
+
     vel = RobotVelocity()
     vel.x = msg.pose.pose.position.x
     vel.y = msg.pose.pose.position.y
@@ -59,6 +93,9 @@ def publish_robot_velocity(msg):
     vel_pub.publish(vel)
 
 def update_goal():
+    """
+    Prompts the user for the new goal and communicates it to the action server
+    """
     global goal
     goal = PlanningGoal()
     goal.target_pose.header.frame_id = "map"
@@ -68,6 +105,18 @@ def update_goal():
     client.send_goal(goal, feedback_cb=read_feedback)
 
 def get_choiche(prompt, choice_list):
+    """
+    Prompts the user to make a choice between the options provided in the choice_list list
+
+    :param prompt: the message to prompt initally before printing the choices
+    :type prompt: string
+
+    :param choice_list: the lsit of choices the user can choose from
+    :type choice_list: list
+
+    :returns: the index of the choice made by the user
+    :rtype: string
+    """
     user_input = 0
     input_ok = False
 
@@ -92,6 +141,9 @@ def get_choiche(prompt, choice_list):
 
 #TODO: better status print
 def print_status():
+    """
+    Prints the status of the current goal
+    """
     if (not goal):
         print("No goal set yet")
         return 
