@@ -20,6 +20,14 @@ You can launch the whole simulation environment and this package by using the fo
 roslaunch ass2_ros1 ass2_ros1.launch 
 ```
 
+If instead you want to use the jupyter notebook interface it's sufficient to launche the simulation with:
+
+```bah
+roslaunch assignment_2_2024 assignment1.launch
+```
+
+and then interact with the jupyter notebook in the script folder
+
 ## Description
 
 After running the simulation and the program you will be prompted with the menu, from where you can follow the instructions.
